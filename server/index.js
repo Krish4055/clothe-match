@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import productsRouter from './routes/products.js';
 import authRouter from './routes/auth.js';
 import wishlistRouter from './routes/wishlist.js';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 dotenv.config();
 
@@ -24,12 +25,20 @@ app.use(
   })
 );
 
-// Database
-const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/swipefit';
-mongoose
-  .connect(mongoUri)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Database with in-memory fallback
+async function connectDb() {
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/swipefit';
+  try {
+    await mongoose.connect(mongoUri);
+    console.log('MongoDB connected:', mongoUri);
+  } catch (err) {
+    console.warn('MongoDB connection failed, starting in-memory MongoDB...');
+    const mem = await MongoMemoryServer.create();
+    const uri = mem.getUri();
+    await mongoose.connect(uri);
+    console.log('In-memory MongoDB connected');
+  }
+}
 
 // Routes
 app.use('/api/products', productsRouter);
@@ -38,7 +47,9 @@ app.use('/api/wishlist', wishlistRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+connectDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
 });
 
