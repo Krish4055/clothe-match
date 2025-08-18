@@ -26,7 +26,7 @@ export function Header({ onSearch, wishlistCount, cartCount, onShowWishlist, onS
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-            SwipeStyle
+            SwipeFit
           </h1>
         </div>
 

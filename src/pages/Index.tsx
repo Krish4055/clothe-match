@@ -102,7 +102,7 @@ const Index = () => {
         
         <div className="relative z-10 text-center text-white space-y-6 px-4">
           <h1 className="text-5xl md:text-7xl font-bold animate-fadeIn">
-            Swipe Your Style
+            Swipe Your Fit
           </h1>
           <p className="text-xl md:text-2xl max-w-2xl mx-auto animate-fadeIn animation-delay-200">
             Discover fashion like never before. Swipe right to love, left to skip.
@@ -162,7 +162,7 @@ const Index = () => {
       <section className="py-16 px-4 bg-secondary/30">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Why SwipeStyle?</h2>
+            <h2 className="text-4xl font-bold mb-4">Why SwipeFit?</h2>
             <p className="text-xl text-muted-foreground">
               Shopping made simple, fun, and personal
             </p>
