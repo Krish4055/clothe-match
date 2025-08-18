@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ interface HeaderProps {
 
 export function Header({ onSearch, wishlistCount, cartCount, onShowWishlist, onShowCart }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +75,7 @@ export function Header({ onSearch, wishlistCount, cartCount, onShowWishlist, onS
             variant="ghost"
             size="icon"
             className="relative"
-            onClick={onShowWishlist}
+            onClick={() => navigate('/wishlist')}
           >
             <Heart className="w-5 h-5" />
             {wishlistCount > 0 && (
@@ -97,7 +99,7 @@ export function Header({ onSearch, wishlistCount, cartCount, onShowWishlist, onS
             )}
           </Button>
 
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/login')}>
             <User className="w-5 h-5" />
           </Button>
 

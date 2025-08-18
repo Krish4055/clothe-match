@@ -4,7 +4,9 @@ import { CategoryCard } from '@/components/CategoryCard';
 import { SwipeInterface } from '@/components/SwipeInterface';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { products, categories, Product } from '@/data/products';
+import { categories } from '@/data/products';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { fetchProducts, ApiProduct, addToWishlist } from '@/lib/api';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Sparkles, ChevronDown } from 'lucide-react';
 import heroImage from '@/assets/hero-fashion.jpg';
@@ -16,15 +18,26 @@ const Index = () => {
   const [wishlist, setWishlist] = useLocalStorage<string[]>('wishlist', []);
   const [cart, setCart] = useLocalStorage<string[]>('cart', []);
 
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ['products', selectedCategory, searchQuery],
+    queryFn: ({ pageParam }) => fetchProducts({
+      page: pageParam ?? 1,
+      limit: 20,
+      category: selectedCategory === 'all' ? undefined : selectedCategory[0].toUpperCase() + selectedCategory.slice(1),
+      q: searchQuery || undefined,
+    }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((acc, p) => acc + p.data.length, 0);
+      return loaded < lastPage.total ? allPages.length + 1 : undefined;
+    },
   });
+
+  const filteredProducts: ApiProduct[] = (data?.pages ?? []).flatMap(p => p.data);
 
   const handleProductLiked = (productId: string) => {
     setWishlist(prev => [...prev, productId]);
+    addToWishlist(productId).catch(() => {});
   };
 
   const handleProductDisliked = (productId: string) => {
@@ -69,7 +82,16 @@ const Index = () => {
           </div>
           
           <SwipeInterface
-            products={filteredProducts}
+            products={filteredProducts.map(p => ({
+              id: p._id,
+              name: p.name,
+              price: p.price,
+              image: p.image,
+              category: (p.category || 'Men').toLowerCase() as any,
+              description: p.description,
+              sizes: p.sizes,
+              brand: p.brand || '',
+            }))}
             onProductLiked={handleProductLiked}
             onProductDisliked={handleProductDisliked}
             onAddToCart={handleAddToCart}
@@ -207,6 +229,38 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Browse Products */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-2">Browse</h2>
+            <p className="text-muted-foreground">Trending styles you might like</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredProducts.map((p) => (
+              <Card key={p._id} className="shadow-card">
+                <CardContent className="p-0">
+                  <img src={p.image} alt={p.name} className="w-full h-64 object-cover rounded-t-xl" />
+                  <div className="p-4">
+                    <div className="font-semibold truncate">{p.name}</div>
+                    <div className="text-muted-foreground">${p.price}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Load more */}
+      <div className="py-8 flex justify-center">
+        {hasNextPage && (
+          <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+            {isFetchingNextPage ? 'Loading...' : 'Load more'}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
