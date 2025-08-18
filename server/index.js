@@ -10,6 +10,7 @@ import productsRouter from './routes/products.js';
 import authRouter from './routes/auth.js';
 import wishlistRouter from './routes/wishlist.js';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import Product from './models/Product.js';
 
 dotenv.config();
 
@@ -37,6 +38,22 @@ async function connectDb() {
     const uri = mem.getUri();
     await mongoose.connect(uri);
     console.log('In-memory MongoDB connected');
+  }
+
+  // Auto-seed if empty
+  const count = await Product.countDocuments();
+  if (count === 0) {
+    await Product.insertMany([
+      { name: 'Classic Black T-Shirt', category: 'Men', price: 29.99, image: 'https://via.placeholder.com/300?text=Black+Tee', description: 'Soft cotton tee in classic black', sizes: ['S','M','L','XL'], inStock: true, brand: 'StyleCo' },
+      { name: 'Premium White Shirt', category: 'Men', price: 59.99, image: 'https://via.placeholder.com/300?text=White+Shirt', description: 'Crisp formal white shirt', sizes: ['S','M','L','XL'], inStock: true, brand: 'FormalWear' },
+      { name: 'Slim Fit Jeans', category: 'Men', price: 79.99, image: 'https://via.placeholder.com/300?text=Slim+Jeans', description: 'Modern slim-fit denim', sizes: ['28','30','32','34','36'], inStock: true, brand: 'DenimCo' },
+      { name: 'Evening Dress', category: 'Women', price: 129.99, image: 'https://via.placeholder.com/300?text=Evening+Dress', description: 'Elegant evening dress', sizes: ['XS','S','M','L'], inStock: true, brand: 'ElegantWear' },
+      { name: 'Summer Top', category: 'Women', price: 39.99, image: 'https://via.placeholder.com/300?text=Summer+Top', description: 'Light and breezy top for summer', sizes: ['XS','S','M','L'], inStock: true, brand: 'SummerStyle' },
+      { name: 'Leather Handbag', category: 'Accessories', price: 149.99, image: 'https://via.placeholder.com/300?text=Handbag', description: 'Premium leather handbag', sizes: ['One Size'], inStock: true, brand: 'LuxuryBags' },
+      { name: 'Sunglasses', category: 'Accessories', price: 79.99, image: 'https://via.placeholder.com/300?text=Sunglasses', description: 'UV protection stylish sunglasses', sizes: ['One Size'], inStock: true, brand: 'SunCo' },
+      { name: 'Analog Watch', category: 'Accessories', price: 199.99, image: 'https://via.placeholder.com/300?text=Watch', description: 'Classic analog wrist watch', sizes: ['One Size'], inStock: true, brand: 'TimeMaster' },
+    ]);
+    console.log('Auto-seeded sample products');
   }
 }
 
